@@ -8,8 +8,8 @@ use std::mem;
 use std::ptr;
 use ui_sys::{self, uiArea, uiAreaDrawParams, uiAreaHandler, uiAreaKeyEvent, uiAreaMouseEvent};
 use ui_sys::{uiBox, uiButton, uiCheckbox, uiColorButton, uiCombobox, uiControl, uiDateTimePicker};
-use ui_sys::{uiEntry, uiFontButton, uiGroup, uiLabel, uiMultilineEntry, uiProgressBar};
-use ui_sys::{uiRadioButtons, uiSeparator, uiSlider, uiSpinbox, uiTab};
+use ui_sys::{uiEditableCombobox, uiEntry, uiFontButton, uiGroup, uiLabel, uiMultilineEntry};
+use ui_sys::{uiProgressBar, uiRadioButtons, uiSeparator, uiSlider, uiSpinbox, uiTab};
 
 pub use ui_sys::uiExtKey as ExtKey;
 
@@ -768,12 +768,61 @@ impl Combobox {
             Combobox::from_ui_control(ui_sys::uiNewCombobox())
         }
     }
+}
 
+define_control!(EditableCombobox, uiEditableCombobox, ui_editable_combobox);
+
+impl EditableCombobox {
     #[inline]
-    pub fn new_editable() -> Combobox {
+    pub fn append(&self, name: &str) {
         ffi_utils::ensure_initialized();
         unsafe {
-            Combobox::from_ui_control(ui_sys::uiNewEditableCombobox())
+            let c_string = CString::new(name.as_bytes().to_vec()).unwrap();
+            ui_sys::uiEditableComboboxAppend(self.ui_editable_combobox, c_string.as_ptr())
+        }
+    }
+
+    #[inline]
+    pub fn selected(&self) -> i64 {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiComboboxSelected(self.ui_editable_combobox as *mut uiCombobox)
+        }
+    }
+
+    #[inline]
+    pub fn set_selected(&self, n: i64) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiComboboxSetSelected(self.ui_editable_combobox as *mut uiCombobox, n)
+        }
+    }
+
+    #[inline]
+    pub fn on_selected(&self, callback: Box<FnMut(&EditableCombobox)>) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            let mut data: Box<Box<FnMut(&EditableCombobox)>> = Box::new(callback);
+            ui_sys::uiComboboxOnSelected(self.ui_editable_combobox as *mut uiCombobox,
+                                         c_callback,
+                                         &mut *data as *mut Box<FnMut(&EditableCombobox)> as *mut c_void);
+            mem::forget(data);
+        }
+
+        extern "C" fn c_callback(combobox: *mut uiCombobox, data: *mut c_void) {
+            unsafe {
+                let combobox = Combobox::from_ui_control(combobox);
+                mem::transmute::<*mut c_void, &mut Box<FnMut(&Combobox)>>(data)(&combobox);
+                mem::forget(combobox);
+            }
+        }
+    }
+
+    #[inline]
+    pub fn new() -> EditableCombobox {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            EditableCombobox::from_ui_control(ui_sys::uiNewEditableCombobox())
         }
     }
 }

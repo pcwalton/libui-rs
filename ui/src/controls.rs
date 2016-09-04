@@ -7,7 +7,8 @@ use std::ffi::CString;
 use std::mem;
 use std::ptr;
 use ui_sys::{self, uiArea, uiAreaDrawParams, uiAreaHandler, uiAreaKeyEvent, uiAreaMouseEvent};
-use ui_sys::{uiBox, uiButton, uiCheckbox, uiColorButton, uiCombobox, uiControl, uiDateTimePicker};
+use ui_sys::{uiBox, uiButton, uiCheckbox, uiColorButton, uiCombobox, uiEditableCombobox,
+             uiControl, uiDateTimePicker};
 use ui_sys::{uiEntry, uiFontButton, uiGroup, uiLabel, uiMultilineEntry, uiProgressBar};
 use ui_sys::{uiRadioButtons, uiSeparator, uiSlider, uiSpinbox, uiTab};
 
@@ -273,7 +274,7 @@ impl BoxControl {
     /// to decrement its reference count per `libui`'s UI as of today, unless we maintain a
     /// separate list of children ourselves…
     #[inline]
-    pub fn delete(&self, index: u64) {
+    pub fn delete(&self, index: i32) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiBoxDelete(self.ui_box, index)
@@ -374,6 +375,22 @@ impl Entry {
         ffi_utils::ensure_initialized();
         unsafe {
             Entry::from_ui_control(ui_sys::uiNewEntry())
+        }
+    }
+
+    #[inline]
+    pub fn new_password() -> Entry {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            Entry::from_ui_control(ui_sys::uiNewPasswordEntry())
+        }
+    }
+
+    #[inline]
+    pub fn new_search() -> Entry {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            Entry::from_ui_control(ui_sys::uiNewSearchEntry())
         }
     }
 }
@@ -487,7 +504,7 @@ impl Tab {
     }
 
     #[inline]
-    pub fn insert_at(&self, name: &str, before: u64, control: Control) {
+    pub fn insert_at(&self, name: &str, before: i32, control: Control) {
         ffi_utils::ensure_initialized();
         unsafe {
             let c_string = CString::new(name.as_bytes().to_vec()).unwrap();
@@ -499,7 +516,7 @@ impl Tab {
     /// to decrement its reference count per `libui`'s UI as of today, unless we maintain a
     /// separate list of children ourselves…
     #[inline]
-    pub fn delete(&self, index: u64) {
+    pub fn delete(&self, index: i32) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiTabDelete(self.ui_tab, index)
@@ -507,7 +524,7 @@ impl Tab {
     }
 
     #[inline]
-    pub fn margined(&self, page: u64) -> bool {
+    pub fn margined(&self, page: i32) -> bool {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiTabMargined(self.ui_tab, page) != 0
@@ -515,7 +532,7 @@ impl Tab {
     }
 
     #[inline]
-    pub fn set_margined(&self, page: u64, margined: bool) {
+    pub fn set_margined(&self, page: i32, margined: bool) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiTabSetMargined(self.ui_tab, page, margined as c_int)
@@ -589,7 +606,7 @@ define_control!(Spinbox, uiSpinbox, ui_spinbox);
 
 impl Spinbox {
     #[inline]
-    pub fn value(&self) -> i64 {
+    pub fn value(&self) -> i32 {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiSpinboxValue(self.ui_spinbox)
@@ -597,7 +614,7 @@ impl Spinbox {
     }
 
     #[inline]
-    pub fn set_value(&self, value: i64) {
+    pub fn set_value(&self, value: i32) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiSpinboxSetValue(self.ui_spinbox, value)
@@ -625,7 +642,7 @@ impl Spinbox {
     }
 
     #[inline]
-    pub fn new(min: i64, max: i64) -> Spinbox {
+    pub fn new(min: i32, max: i32) -> Spinbox {
         ffi_utils::ensure_initialized();
         unsafe {
             Spinbox::from_ui_control(ui_sys::uiNewSpinbox(min, max))
@@ -636,6 +653,14 @@ impl Spinbox {
 define_control!(ProgressBar, uiProgressBar, ui_progress_bar);
 
 impl ProgressBar {
+    #[inline]
+    pub fn value(&self) -> i32 {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiProgressBarValue(self.ui_progress_bar)
+        }
+    }
+
     #[inline]
     pub fn set_value(&self, n: i32) {
         ffi_utils::ensure_initialized();
@@ -657,7 +682,7 @@ define_control!(Slider, uiSlider, ui_slider);
 
 impl Slider {
     #[inline]
-    pub fn value(&self) -> i64 {
+    pub fn value(&self) -> i32 {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiSliderValue(self.ui_slider)
@@ -665,7 +690,7 @@ impl Slider {
     }
 
     #[inline]
-    pub fn set_value(&self, value: i64) {
+    pub fn set_value(&self, value: i32) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiSliderSetValue(self.ui_slider, value)
@@ -693,7 +718,7 @@ impl Slider {
     }
 
     #[inline]
-    pub fn new(min: i64, max: i64) -> Slider {
+    pub fn new(min: i32, max: i32) -> Slider {
         ffi_utils::ensure_initialized();
         unsafe {
             Slider::from_ui_control(ui_sys::uiNewSlider(min, max))
@@ -711,6 +736,14 @@ impl Separator {
             Separator::from_ui_control(ui_sys::uiNewHorizontalSeparator())
         }
     }
+
+    #[inline]
+    pub fn new_vertical() -> Separator {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            Separator::from_ui_control(ui_sys::uiNewVerticalSeparator())
+        }
+    }
 }
 
 define_control!(Combobox, uiCombobox, ui_combobox);
@@ -726,7 +759,7 @@ impl Combobox {
     }
 
     #[inline]
-    pub fn selected(&self) -> i64 {
+    pub fn selected(&self) -> i32 {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiComboboxSelected(self.ui_combobox)
@@ -734,7 +767,7 @@ impl Combobox {
     }
 
     #[inline]
-    pub fn set_selected(&self, n: i64) {
+    pub fn set_selected(&self, n: i32) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiComboboxSetSelected(self.ui_combobox, n)
@@ -768,18 +801,67 @@ impl Combobox {
             Combobox::from_ui_control(ui_sys::uiNewCombobox())
         }
     }
+}
 
+define_control!(EditableCombobox, uiEditableCombobox, ui_editable_combobox);
+
+impl EditableCombobox {
     #[inline]
-    pub fn new_editable() -> Combobox {
+    pub fn append(&self, name: &str) {
         ffi_utils::ensure_initialized();
         unsafe {
-            Combobox::from_ui_control(ui_sys::uiNewEditableCombobox())
+            let c_string = CString::new(name.as_bytes().to_vec()).unwrap();
+            ui_sys::uiEditableComboboxAppend(self.ui_editable_combobox, c_string.as_ptr())
+        }
+    }
+
+    #[inline]
+    pub fn text(&self) -> Text {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            Text::new(ui_sys::uiEditableComboboxText(self.ui_editable_combobox))
+        }
+    }
+
+    #[inline]
+    pub fn set_text(&self, text: &str) {
+        ffi_utils::ensure_initialized();
+        let c_string = CString::new(text.as_bytes().to_vec()).unwrap();
+        unsafe {
+            ui_sys::uiEditableComboboxSetText(self.ui_editable_combobox, c_string.as_ptr())
+        }
+    }
+
+    #[inline]
+    pub fn on_changed(&self, callback: Box<FnMut(&EditableCombobox)>) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            let mut data: Box<Box<FnMut(&EditableCombobox)>> = Box::new(callback);
+            ui_sys::uiEditableComboboxOnChanged(self.ui_editable_combobox,
+                                         c_callback,
+                                         &mut *data as *mut Box<FnMut(&EditableCombobox)> as *mut c_void);
+            mem::forget(data);
+        }
+
+        extern "C" fn c_callback(editablecombobox: *mut uiEditableCombobox, data: *mut c_void) {
+            unsafe {
+                let editablecombobox = EditableCombobox::from_ui_control(editablecombobox);
+                mem::transmute::<*mut c_void,
+                                 &mut Box<FnMut(&EditableCombobox)>>(data)(&editablecombobox);
+                mem::forget(editablecombobox);
+            }
+        }
+    }
+
+    #[inline]
+    pub fn new() -> EditableCombobox {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            EditableCombobox::from_ui_control(ui_sys::uiNewEditableCombobox())
         }
     }
 }
 
-// FIXME(pcwalton): Are these supposed to be a subclass of something? They don't seem very usable
-// with just the `uiRadioButtons*` methods…
 define_control!(RadioButtons, uiRadioButtons, ui_radio_buttons);
 
 impl RadioButtons {
@@ -789,6 +871,43 @@ impl RadioButtons {
         unsafe {
             let c_string = CString::new(name.as_bytes().to_vec()).unwrap();
             ui_sys::uiRadioButtonsAppend(self.ui_radio_buttons, c_string.as_ptr())
+        }
+    }
+
+    #[inline]
+    pub fn selected(&self) -> i32 {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiRadioButtonsSelected(self.ui_radio_buttons)
+        }
+    }
+
+    #[inline]
+    pub fn set_selected(&self, n: i32) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiRadioButtonsSetSelected(self.ui_radio_buttons, n)
+        }
+    }
+
+    #[inline]
+    pub fn on_selected(&self, callback: Box<FnMut(&RadioButtons)>) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            let mut data: Box<Box<FnMut(&RadioButtons)>> = Box::new(callback);
+            ui_sys::uiRadioButtonsOnSelected(self.ui_radio_buttons,
+                                             c_callback,
+                                             &mut *data as *mut Box<FnMut(&RadioButtons)> as
+                                             *mut c_void);
+            mem::forget(data);
+        }
+
+        extern "C" fn c_callback(ui_font_button: *mut uiRadioButtons, data: *mut c_void) {
+            unsafe {
+                let radio_buttons = RadioButtons::from_ui_control(ui_font_button);
+                mem::transmute::<*mut c_void, &mut Box<FnMut(&RadioButtons)>>(data)(&radio_buttons);
+                mem::forget(radio_buttons);
+            }
         }
     }
 
@@ -891,6 +1010,14 @@ impl MultilineEntry {
         ffi_utils::ensure_initialized();
         unsafe {
             MultilineEntry::from_ui_control(ui_sys::uiNewMultilineEntry())
+        }
+    }
+
+    #[inline]
+    pub fn new_non_wrapping() -> MultilineEntry {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            MultilineEntry::from_ui_control(ui_sys::uiNewNonWrappingMultilineEntry())
         }
     }
 }
@@ -1002,7 +1129,7 @@ impl Area {
     }
 
     #[inline]
-    pub fn set_size(&self, width: i64, height: i64) {
+    pub fn set_size(&self, width: i32, height: i32) {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiAreaSetSize(self.ui_area, width, height)
@@ -1040,7 +1167,7 @@ impl Area {
     }
 
     #[inline]
-    pub fn new_scrolling(area_handler: Box<AreaHandler>, width: i64, height: i64) -> Area {
+    pub fn new_scrolling(area_handler: Box<AreaHandler>, width: i32, height: i32) -> Area {
         ffi_utils::ensure_initialized();
         unsafe {
             let mut rust_area_handler = RustAreaHandler::new(area_handler);
@@ -1101,10 +1228,10 @@ pub struct AreaMouseEvent {
     pub area_width: f64,
     pub area_height: f64,
 
-    pub down: u64,
-    pub up: u64,
+    pub down: i32,
+    pub up: i32,
 
-    pub count: u64,
+    pub count: i32,
 
     pub modifiers: Modifiers,
 
@@ -1256,4 +1383,3 @@ pub struct Color {
     b: f64,
     a: f64,
 }
-

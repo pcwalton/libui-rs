@@ -733,4 +733,3 @@ extern {
                                   data: *mut c_void);
     pub fn uiNewColorButton() -> *mut uiColorButton;
 }
-

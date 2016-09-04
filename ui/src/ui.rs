@@ -1,7 +1,7 @@
 //! General functions.
 
 use ffi_utils::{self, Text};
-use libc::{c_char, c_void};
+use libc::{c_char, c_int, c_void};
 use std::fmt::{self, Debug, Formatter};
 use std::ffi::{CStr, CString};
 use std::mem;
@@ -43,6 +43,20 @@ pub fn uninit() {
 pub fn main() {
     unsafe {
         ui_sys::uiMain()
+    }
+}
+
+#[inline]
+pub fn main_steps() {
+    unsafe {
+        ui_sys::uiMainSteps()
+    }
+}
+
+#[inline]
+pub fn main_step(wait: bool) -> bool {
+    unsafe {
+        ui_sys::uiMainStep(wait as c_int) != 0
     }
 }
 
@@ -131,4 +145,3 @@ pub fn msg_box_error(parent: &Window, title: &str, description: &str) {
         ui_sys::uiMsgBoxError(parent.as_ui_window(), c_title.as_ptr(), c_description.as_ptr())
     }
 }
-

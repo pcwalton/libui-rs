@@ -501,7 +501,7 @@ impl FontFamilies {
     }
 
     #[inline]
-    pub fn len(&self) -> u64 {
+    pub fn len(&self) -> i32 {
         ffi_utils::ensure_initialized();
         unsafe {
             ui_sys::uiDrawFontFamiliesNumFamilies(self.ui_draw_font_families)
@@ -509,7 +509,7 @@ impl FontFamilies {
     }
 
     #[inline]
-    pub fn family(&self, index: u64) -> Text {
+    pub fn family(&self, index: i32) -> Text {
         ffi_utils::ensure_initialized();
         assert!(index < self.len());
         unsafe {
@@ -693,7 +693,7 @@ pub mod text {
         }
 
         #[inline]
-        pub fn set_color(&self, start_char: i64, end_char: i64, r: f64, g: f64, b: f64, a: f64) {
+        pub fn set_color(&self, start_char: i32, end_char: i32, r: f64, g: f64, b: f64, a: f64) {
             ffi_utils::ensure_initialized();
             unsafe {
                 ui_sys::uiDrawTextLayoutSetColor(self.ui_draw_text_layout,
@@ -707,4 +707,3 @@ pub mod text {
         }
     }
 }
-

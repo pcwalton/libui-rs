@@ -38,6 +38,112 @@ impl Window {
     }
 
     #[inline]
+    pub fn position(&self) -> (i32, i32) {
+        ffi_utils::ensure_initialized();
+        let mut x: c_int = 0;
+        let mut y: c_int = 0;
+        unsafe {
+            ui_sys::uiWindowPosition(self.ui_window, &mut x, &mut y);
+        }
+        (x, y)
+    }
+
+    #[inline]
+    pub fn set_position(&self, x: i32, y: i32) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowSetPosition(self.ui_window, x as c_int, y as c_int)
+        }
+    }
+
+    #[inline]
+    pub fn center(&self) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowCenter(self.ui_window)
+        }
+    }
+
+    #[inline]
+    pub fn on_position_changed(&self, callback: Box<FnMut(&Window)>) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            let mut data: Box<Box<FnMut(&Window)>> = Box::new(callback);
+            ui_sys::uiWindowOnPositionChanged(self.ui_window,
+                                              c_callback,
+                                              &mut *data as *mut Box<FnMut(&Window)> as
+                                              *mut c_void);
+            mem::forget(data);
+        }
+
+        extern "C" fn c_callback(window: *mut uiWindow, data: *mut c_void) {
+            unsafe {
+                let window = Window {
+                    ui_window: window,
+                };
+                mem::transmute::<*mut c_void, &mut Box<FnMut(&Window)>>(data)(&window)
+            }
+        }
+    }
+
+    #[inline]
+    pub fn content_size(&self) -> (i32, i32) {
+        ffi_utils::ensure_initialized();
+        let mut width: c_int = 0;
+        let mut height: c_int = 0;
+        unsafe {
+            ui_sys::uiWindowContentSize(self.ui_window, &mut width, &mut height);
+        }
+        (width, height)
+    }
+
+    #[inline]
+    pub fn set_content_size(&self, width: i32, height: i32) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowSetContentSize(self.ui_window, width as c_int, height as c_int)
+        }
+    }
+
+    #[inline]
+    pub fn fullscreen(&self) -> bool {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowFullscreen(self.ui_window) != 0
+        }
+    }
+
+    #[inline]
+    pub fn set_fullscreen(&self, fullscreen: bool) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowSetFullscreen(self.ui_window, fullscreen as c_int)
+        }
+    }
+
+    #[inline]
+    pub fn on_content_size_changed(&self, callback: Box<FnMut(&Window)>) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            let mut data: Box<Box<FnMut(&Window)>> = Box::new(callback);
+            ui_sys::uiWindowOnContentSizeChanged(self.ui_window,
+                                                 c_callback,
+                                                 &mut *data as *mut Box<FnMut(&Window)> as
+                                                 *mut c_void);
+            mem::forget(data);
+        }
+
+        extern "C" fn c_callback(window: *mut uiWindow, data: *mut c_void) {
+            unsafe {
+                let window = Window {
+                    ui_window: window,
+                };
+                mem::transmute::<*mut c_void, &mut Box<FnMut(&Window)>>(data)(&window)
+            }
+        }
+    }
+
+    #[inline]
     pub fn on_closing(&self, callback: Box<FnMut(&Window) -> bool>) {
         ffi_utils::ensure_initialized();
         unsafe {
@@ -57,6 +163,22 @@ impl Window {
                 mem::transmute::<*mut c_void,
                                  Box<Box<FnMut(&Window) -> bool>>>(data)(&window) as i32
             }
+        }
+    }
+
+    #[inline]
+    pub fn borderless(&self) -> bool {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowBorderless(self.ui_window) != 0
+        }
+    }
+
+    #[inline]
+    pub fn set_borderless(&self, borderless: bool) {
+        ffi_utils::ensure_initialized();
+        unsafe {
+            ui_sys::uiWindowSetBorderless(self.ui_window, borderless as c_int)
         }
     }
 
@@ -116,4 +238,3 @@ impl Window {
         })
     }
 }
-

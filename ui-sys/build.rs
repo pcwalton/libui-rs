@@ -1,22 +1,34 @@
-extern crate make_cmd;
+extern crate cmake;
 
-use std::env;
+use std::env::var;
+use std::fs::rename;
 use std::path::Path;
 use std::process::Command;
 
 fn main() {
+    println!("cargo:rerun-if-changed=libui");
+
     if !Path::new("libui/.git").exists() {
-        Command::new("git").args(&["submodule", "update", "--init"]).status().unwrap();
+        Command::new("git")
+            .args(&["submodule", "update", "--init"])
+            .status()
+            .expect("initializing submodule libui");
     }
 
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let outdir_argument = format!("OUTDIR={}", out_dir);
-    let objdir_argument = format!("OBJDIR={}/obj", out_dir);
-    make_cmd::gnu_make().args(&["-C", "libui", &*outdir_argument, &*objdir_argument])
-                        .status()
-                        .unwrap();
+    let profile = var("PROFILE").expect("reading environment variable PROFILE");
+    let dst = cmake::Config::new("libui")
+        .profile(profile.as_str())
+        .build_target("")
+        .build();
 
+    let mut out_dir = dst.join(Path::new("build/out"));
+
+    let target = var("TARGET").expect("reading environment variable TARGET");
+    if target.contains("msvc") {
+        out_dir = out_dir.join(Path::new(profile.as_str()));
+        rename(out_dir.join("libui.lib"), out_dir.join("ui.lib")).expect("renaming file libui.lib");
+    }
+
+    println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rustc-link-lib=dylib=ui");
-    println!("cargo:rustc-link-search=native={}", out_dir);
 }
-

@@ -4,7 +4,7 @@
 
 extern crate libc;
 
-use libc::{c_char, c_double, c_int, c_void, intmax_t, size_t, uintmax_t};
+use libc::{c_char, c_double, c_int, c_void, size_t};
 
 pub mod platform {
     pub mod macos;
@@ -25,6 +25,8 @@ extern {
     pub fn uiFreeInitError(err: *const c_char);
 
     pub fn uiMain();
+    pub fn uiMainSteps();
+    pub fn uiMainStep(wait: c_int) -> c_int;
     pub fn uiQuit();
 
     pub fn uiQueueMain(f: extern "C" fn(data: *mut c_void), data: *mut c_void);
@@ -71,9 +73,10 @@ extern {
                           -> *mut uiControl;
     pub fn uiFreeControl(control: *mut uiControl);
 
-    pub fn uiControlVerifyDestroy(control: *mut uiControl);
     pub fn uiControlVerifySetParent(control: *mut uiControl, new_parent: *mut uiControl);
     pub fn uiControlEnabledToUser(control: *mut uiControl) -> c_int;
+
+    pub fn uiUserBugCannotSetParentOnToplevel(typ: *const c_char);
 }
 
 pub enum uiWindow {}
@@ -82,9 +85,24 @@ pub enum uiWindow {}
 extern {
     pub fn uiWindowTitle(w: *mut uiWindow) -> *mut c_char;
     pub fn uiWindowSetTitle(w: *mut uiWindow, title: *const c_char);
+    pub fn uiWindowPosition(w: *mut uiWindow, x: *mut c_int, y: *mut c_int);
+    pub fn uiWindowSetPosition(w: *mut uiWindow, x: c_int, y: c_int);
+    pub fn uiWindowCenter(w: *mut uiWindow);
+    pub fn uiWindowOnPositionChanged(w: *mut uiWindow,
+                                     f: extern "C" fn(w: *mut uiWindow, data: *mut c_void),
+                                     data: *mut c_void);
+    pub fn uiWindowContentSize(w: *mut uiWindow, width: *mut c_int, height: *mut c_int);
+    pub fn uiWindowSetContentSize(w: *mut uiWindow, width: c_int, height: c_int);
+    pub fn uiWindowFullscreen(w: *mut uiWindow) -> c_int;
+    pub fn uiWindowSetFullscreen(w: *mut uiWindow, fullscreen: c_int);
+    pub fn uiWindowOnContentSizeChanged(w: *mut uiWindow,
+                                        f: extern "C" fn(w: *mut uiWindow, data: *mut c_void),
+                                        data: *mut c_void);
     pub fn uiWindowOnClosing(w: *mut uiWindow,
                              f: extern "C" fn(w: *mut uiWindow, data: *mut c_void) -> c_int,
                              data: *mut c_void);
+    pub fn uiWindowBorderless(w: *mut uiWindow) -> c_int;
+    pub fn uiWindowSetBorderless(w: *mut uiWindow, fullscreen: c_int);
     pub fn uiWindowSetChild(w: *mut uiWindow, child: *mut uiControl);
     pub fn uiWindowMargined(w: *mut uiWindow) -> c_int;
     pub fn uiWindowSetMargined(w: *mut uiWindow, margined: c_int);
@@ -109,7 +127,7 @@ pub enum uiBox {}
 #[link(name = "ui")]
 extern {
     pub fn uiBoxAppend(b: *mut uiBox, child: *mut uiControl, stretchy: c_int);
-    pub fn uiBoxDelete(b: *mut uiBox, index: uintmax_t);
+    pub fn uiBoxDelete(b: *mut uiBox, index: c_int);
     pub fn uiBoxPadded(b: *mut uiBox) -> c_int;
     pub fn uiBoxSetPadded(b: *mut uiBox, padded: c_int);
     pub fn uiNewHorizontalBox() -> *mut uiBox;
@@ -128,6 +146,8 @@ extern {
     pub fn uiEntryReadOnly(e: *mut uiEntry) -> c_int;
     pub fn uiEntrySetReadOnly(e: *mut uiEntry, readonly: c_int);
     pub fn uiNewEntry() -> *mut uiEntry;
+    pub fn uiNewPasswordEntry() -> *mut uiEntry;
+    pub fn uiNewSearchEntry() -> *mut uiEntry;
 }
 
 pub enum uiCheckbox {}
@@ -158,11 +178,11 @@ pub enum uiTab {}
 #[link(name = "ui")]
 extern {
     pub fn uiTabAppend(t: *mut uiTab, name: *const c_char, c: *mut uiControl);
-    pub fn uiTabInsertAt(t: *mut uiTab, name: *const c_char, before: uintmax_t, c: *mut uiControl);
-    pub fn uiTabDelete(t: *mut uiTab, index: uintmax_t);
-    pub fn uiTabNumPages(t: *mut uiTab) -> uintmax_t;
-    pub fn uiTabMargined(t: *mut uiTab, page: uintmax_t) -> c_int;
-    pub fn uiTabSetMargined(t: *mut uiTab, page: uintmax_t, margined: c_int);
+    pub fn uiTabInsertAt(t: *mut uiTab, name: *const c_char, before: c_int, c: *mut uiControl);
+    pub fn uiTabDelete(t: *mut uiTab, index: c_int);
+    pub fn uiTabNumPages(t: *mut uiTab) -> c_int;
+    pub fn uiTabMargined(t: *mut uiTab, page: c_int) -> c_int;
+    pub fn uiTabSetMargined(t: *mut uiTab, page: c_int, margined: c_int);
     pub fn uiNewTab() -> *mut uiTab;
 }
 
@@ -182,18 +202,19 @@ pub enum uiSpinbox {}
 
 #[link(name = "ui")]
 extern {
-    pub fn uiSpinboxValue(s: *mut uiSpinbox) -> intmax_t;
-    pub fn uiSpinboxSetValue(s: *mut uiSpinbox, value: intmax_t);
+    pub fn uiSpinboxValue(s: *mut uiSpinbox) -> c_int;
+    pub fn uiSpinboxSetValue(s: *mut uiSpinbox, value: c_int);
     pub fn uiSpinboxOnChanged(s: *mut uiSpinbox,
                               f: extern "C" fn(s: *mut uiSpinbox, data: *mut c_void),
                               data: *mut c_void);
-    pub fn uiNewSpinbox(min: intmax_t, max: intmax_t) -> *mut uiSpinbox;
+    pub fn uiNewSpinbox(min: c_int, max: c_int) -> *mut uiSpinbox;
 }
 
 pub enum uiProgressBar {}
 
 #[link(name = "ui")]
 extern {
+    pub fn uiProgressBarValue(p: *mut uiProgressBar) -> c_int;
     pub fn uiProgressBarSetValue(p: *mut uiProgressBar, n: c_int);
     pub fn uiNewProgressBar() -> *mut uiProgressBar;
 }
@@ -202,12 +223,12 @@ pub enum uiSlider {}
 
 #[link(name = "ui")]
 extern {
-    pub fn uiSliderValue(s: *mut uiSlider) -> intmax_t;
-    pub fn uiSliderSetValue(s: *mut uiSlider, value: intmax_t);
+    pub fn uiSliderValue(s: *mut uiSlider) -> c_int;
+    pub fn uiSliderSetValue(s: *mut uiSlider, value: c_int);
     pub fn uiSliderOnChanged(s: *mut uiSlider,
                              f: extern "C" fn(s: *mut uiSlider, data: *mut c_void),
                              data: *mut c_void);
-    pub fn uiNewSlider(min: intmax_t, max: intmax_t) -> *mut uiSlider;
+    pub fn uiNewSlider(min: c_int, max: c_int) -> *mut uiSlider;
 }
 
 pub enum uiSeparator {}
@@ -215,6 +236,7 @@ pub enum uiSeparator {}
 #[link(name = "ui")]
 extern {
     pub fn uiNewHorizontalSeparator() -> *mut uiSeparator;
+    pub fn uiNewVerticalSeparator() -> *mut uiSeparator;
 }
 
 pub enum uiCombobox {}
@@ -222,13 +244,25 @@ pub enum uiCombobox {}
 #[link(name = "ui")]
 extern {
     pub fn uiComboboxAppend(c: *mut uiCombobox, text: *const c_char);
-    pub fn uiComboboxSelected(c: *mut uiCombobox) -> intmax_t;
-    pub fn uiComboboxSetSelected(c: *mut uiCombobox, n: intmax_t);
+    pub fn uiComboboxSelected(c: *mut uiCombobox) -> c_int;
+    pub fn uiComboboxSetSelected(c: *mut uiCombobox, n: c_int);
     pub fn uiComboboxOnSelected(c: *mut uiCombobox,
                                 f: extern "C" fn(c: *mut uiCombobox, data: *mut c_void),
                                 data: *mut c_void);
     pub fn uiNewCombobox() -> *mut uiCombobox;
-    pub fn uiNewEditableCombobox() -> *mut uiCombobox;
+}
+
+pub enum uiEditableCombobox {}
+
+#[link(name = "ui")]
+extern {
+    pub fn uiEditableComboboxAppend(c: *mut uiEditableCombobox, text: *const c_char);
+    pub fn uiEditableComboboxText(c: *mut uiEditableCombobox) -> *mut c_char;
+    pub fn uiEditableComboboxSetText(c: *mut uiEditableCombobox, text: *const c_char);
+    pub fn uiEditableComboboxOnChanged(c: *mut uiEditableCombobox,
+                                       f: extern "C" fn(c: *mut uiEditableCombobox, data: *mut c_void),
+                                       data: *mut c_void);
+    pub fn uiNewEditableCombobox() -> *mut uiEditableCombobox;
 }
 
 pub enum uiRadioButtons {}
@@ -236,6 +270,11 @@ pub enum uiRadioButtons {}
 #[link(name = "ui")]
 extern {
     pub fn uiRadioButtonsAppend(r: *mut uiRadioButtons, text: *const c_char);
+    pub fn uiRadioButtonsSelected(r: *mut uiRadioButtons) -> c_int;
+    pub fn uiRadioButtonsSetSelected(r: *mut uiRadioButtons, value: c_int);
+    pub fn uiRadioButtonsOnSelected(r: *mut uiRadioButtons,
+                                 f: extern "C" fn(r: *mut uiRadioButtons, data: *mut c_void),
+                                 data: *mut c_void);
     pub fn uiNewRadioButtons() -> *mut uiRadioButtons;
 }
 
@@ -261,6 +300,7 @@ extern {
     pub fn uiMultilineEntryReadOnly(e: *mut uiMultilineEntry) -> c_int;
     pub fn uiMultilineEntrySetReadOnly(e: *mut uiMultilineEntry, readonly: c_int);
     pub fn uiNewMultilineEntry() -> *mut uiMultilineEntry;
+    pub fn uiNewNonWrappingMultilineEntry() -> *mut uiMultilineEntry;
 }
 
 pub enum uiMenuItem {}
@@ -321,7 +361,7 @@ pub struct uiAreaHandler {
 
 #[link(name = "ui")]
 extern {
-    pub fn uiAreaSetSize(a: *mut uiArea, width: intmax_t, height: intmax_t);
+    pub fn uiAreaSetSize(a: *mut uiArea, width: c_int, height: c_int);
     pub fn uiAreaQueueRedrawAll(a: *mut uiArea);
     pub fn uiAreaScrollTo(a: *mut uiArea,
                           x: c_double,
@@ -329,7 +369,7 @@ extern {
                           width: c_double,
                           height: c_double);
     pub fn uiNewArea(ah: *mut uiAreaHandler) -> *mut uiArea;
-    pub fn uiNewScrollingArea(ah: *mut uiAreaHandler, width: intmax_t, height: intmax_t)
+    pub fn uiNewScrollingArea(ah: *mut uiAreaHandler, width: c_int, height: c_int)
                               -> *mut uiArea;
 }
 
@@ -523,8 +563,8 @@ pub enum uiDrawFontFamilies {}
 
 extern "C" {
     pub fn uiDrawListFontFamilies() -> *mut uiDrawFontFamilies;
-    pub fn uiDrawFontFamiliesNumFamilies(ff: *mut uiDrawFontFamilies) -> uintmax_t;
-    pub fn uiDrawFontFamiliesFamily(ff: *mut uiDrawFontFamilies, n: uintmax_t) -> *mut c_char;
+    pub fn uiDrawFontFamiliesNumFamilies(ff: *mut uiDrawFontFamilies) -> c_int;
+    pub fn uiDrawFontFamiliesFamily(ff: *mut uiDrawFontFamilies, n: c_int) -> *mut c_char;
     pub fn uiDrawFreeFontFamilies(ff: *mut uiDrawFontFamilies);
 }
 
@@ -612,8 +652,8 @@ extern "C" {
                                    height: *mut c_double);
 
     pub fn uiDrawTextLayoutSetColor(layout: *mut uiDrawTextLayout,
-                                    startChar: intmax_t,
-                                    endChar: intmax_t,
+                                    startChar: c_int,
+                                    endChar: c_int,
                                     r: c_double,
                                     g: c_double,
                                     b: c_double,
@@ -641,10 +681,10 @@ pub struct uiAreaMouseEvent {
     pub AreaWidth: c_double,
     pub AreaHeight: c_double,
 
-    pub Down: uintmax_t,
-    pub Up: uintmax_t,
+    pub Down: c_int,
+    pub Up: c_int,
 
-    pub Count: uintmax_t,
+    pub Count: c_int,
 
     pub Modifiers: uiModifiers,
 
@@ -741,4 +781,3 @@ extern {
                                   data: *mut c_void);
     pub fn uiNewColorButton() -> *mut uiColorButton;
 }
-

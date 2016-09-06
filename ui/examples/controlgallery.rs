@@ -2,7 +2,8 @@
 
 extern crate ui;
 
-use ui::{BoxControl, Button, Checkbox, ColorButton, Combobox, DateTimePicker, Entry};
+use ui::{BoxControl, Button, Checkbox, ColorButton, Combobox, EditableCombobox,
+         DateTimePicker, Entry};
 use ui::{FontButton, Group, InitOptions, Label, Menu, MenuItem, ProgressBar, RadioButtons};
 use ui::{Separator, Slider, Spinbox, Tab, Window};
 
@@ -97,7 +98,7 @@ fn run() {
     cbox.append("Combobox Item 3");
     inner.append(cbox.into(), false);
 
-    let cbox = Combobox::new_editable();
+    let cbox = EditableCombobox::new();
     cbox.append("Editable Item 1");
     cbox.append("Editable Item 2");
     cbox.append("Editable Item 3");
@@ -133,7 +134,7 @@ fn open_clicked(_: &MenuItem, mainwin: &Window) {
 }
 
 fn save_clicked(_: &MenuItem, mainwin: &Window) {
-    match ui::open_file(mainwin) {
+    match ui::save_file(mainwin) {
         Some(filename) => {
             ui::msg_box(mainwin, "File selected (don't worry, it's still there)", &*filename)
         }
@@ -141,7 +142,6 @@ fn save_clicked(_: &MenuItem, mainwin: &Window) {
     }
 }
 
-fn update(_: i64) {
+fn update(_: i32) {
     // TODO(pcwalton)
 }
-

@@ -10,5 +10,4 @@ description = "Native bindings to the minimalist, cross-platform, widget set `li
 libc = "0.2"
 
 [build-dependencies]
-make-cmd = "0.1"
-
+cmake = "0.1.22"

@@ -18,7 +18,6 @@ pub struct uiInitOptions {
     pub Size: size_t,
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiInit(options: *mut uiInitOptions) -> *const c_char;
     pub fn uiUninit();
@@ -53,7 +52,6 @@ pub struct uiControl {
     pub Disable: extern "C" fn(this: *mut uiControl),
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiControlDestroy(control: *mut uiControl);
     pub fn uiControlHandle(control: *mut uiControl) -> usize;
@@ -78,7 +76,6 @@ extern {
 
 pub enum uiWindow {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiWindowTitle(w: *mut uiWindow) -> *mut c_char;
     pub fn uiWindowSetTitle(w: *mut uiWindow, title: *const c_char);
@@ -94,7 +91,6 @@ extern {
 
 pub enum uiButton {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiButtonText(b: *mut uiButton) -> *mut c_char;
     pub fn uiButtonSetText(b: *mut uiButton, text: *const c_char);
@@ -106,7 +102,6 @@ extern {
 
 pub enum uiBox {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiBoxAppend(b: *mut uiBox, child: *mut uiControl, stretchy: c_int);
     pub fn uiBoxDelete(b: *mut uiBox, index: uintmax_t);
@@ -118,7 +113,6 @@ extern {
 
 pub enum uiEntry {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiEntryText(e: *mut uiEntry) -> *mut c_char;
     pub fn uiEntrySetText(e: *mut uiEntry, text: *const c_char);
@@ -132,7 +126,6 @@ extern {
 
 pub enum uiCheckbox {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiCheckboxText(c: *mut uiCheckbox) -> *mut c_char;
     pub fn uiCheckboxSetText(c: *mut uiCheckbox, text: *const c_char);
@@ -146,7 +139,6 @@ extern {
 
 pub enum uiLabel {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiLabelText(l: *mut uiLabel) -> *mut c_char;
     pub fn uiLabelSetText(l: *mut uiLabel, text: *const c_char);
@@ -155,7 +147,6 @@ extern {
 
 pub enum uiTab {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiTabAppend(t: *mut uiTab, name: *const c_char, c: *mut uiControl);
     pub fn uiTabInsertAt(t: *mut uiTab, name: *const c_char, before: uintmax_t, c: *mut uiControl);
@@ -168,7 +159,6 @@ extern {
 
 pub enum uiGroup {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiGroupTitle(g: *mut uiGroup) -> *mut c_char;
     pub fn uiGroupSetTitle(g: *mut uiGroup, title: *const c_char);
@@ -180,7 +170,6 @@ extern {
 
 pub enum uiSpinbox {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiSpinboxValue(s: *mut uiSpinbox) -> intmax_t;
     pub fn uiSpinboxSetValue(s: *mut uiSpinbox, value: intmax_t);
@@ -192,7 +181,6 @@ extern {
 
 pub enum uiProgressBar {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiProgressBarSetValue(p: *mut uiProgressBar, n: c_int);
     pub fn uiNewProgressBar() -> *mut uiProgressBar;
@@ -200,7 +188,6 @@ extern {
 
 pub enum uiSlider {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiSliderValue(s: *mut uiSlider) -> intmax_t;
     pub fn uiSliderSetValue(s: *mut uiSlider, value: intmax_t);
@@ -212,14 +199,12 @@ extern {
 
 pub enum uiSeparator {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiNewHorizontalSeparator() -> *mut uiSeparator;
 }
 
 pub enum uiCombobox {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiComboboxAppend(c: *mut uiCombobox, text: *const c_char);
     pub fn uiComboboxSelected(c: *mut uiCombobox) -> intmax_t;
@@ -233,7 +218,6 @@ extern {
 
 pub enum uiRadioButtons {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiRadioButtonsAppend(r: *mut uiRadioButtons, text: *const c_char);
     pub fn uiNewRadioButtons() -> *mut uiRadioButtons;
@@ -241,7 +225,6 @@ extern {
 
 pub enum uiDateTimePicker {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiNewDateTimePicker() -> *mut uiDateTimePicker;
     pub fn uiNewDatePicker() -> *mut uiDateTimePicker;
@@ -250,7 +233,6 @@ extern {
 
 pub enum uiMultilineEntry {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiMultilineEntryText(e: *mut uiMultilineEntry) -> *mut c_char;
     pub fn uiMultilineEntrySetText(e: *mut uiMultilineEntry, text: *const c_char);
@@ -265,7 +247,6 @@ extern {
 
 pub enum uiMenuItem {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiMenuItemEnable(m: *mut uiMenuItem);
     pub fn uiMenuItemDisable(m: *mut uiMenuItem);
@@ -280,7 +261,6 @@ extern {
 
 pub enum uiMenu {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiMenuAppendItem(m: *mut uiMenu, name: *const c_char) -> *mut uiMenuItem;
     pub fn uiMenuAppendCheckItem(m: *mut uiMenu, name: *const c_char) -> *mut uiMenuItem;
@@ -291,7 +271,6 @@ extern {
     pub fn uiNewMenu(name: *const c_char) -> *mut uiMenu;
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiOpenFile(parent: *mut uiWindow) -> *mut c_char;
     pub fn uiSaveFile(parent: *mut uiWindow) -> *mut c_char;
@@ -319,7 +298,6 @@ pub struct uiAreaHandler {
                                 -> c_int,
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiAreaSetSize(a: *mut uiArea, width: intmax_t, height: intmax_t);
     pub fn uiAreaQueueRedrawAll(a: *mut uiArea);
@@ -442,13 +420,11 @@ pub struct uiDrawStrokeParams {
     pub DashPhase: c_double,
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiDrawNewPath(fillMode: uiDrawFillMode) -> *mut uiDrawPath;
     pub fn uiDrawFreePath(p: *mut uiDrawPath);
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiDrawPathNewFigure(p: *mut uiDrawPath, x: c_double, y: c_double);
     pub fn uiDrawPathNewFigureWithArc(p: *mut uiDrawPath,
@@ -713,7 +689,6 @@ pub struct uiAreaKeyEvent {
 
 pub enum uiFontButton {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiFontButtonFont(b: *mut uiFontButton) -> *mut uiDrawTextFont;
     pub fn uiFontButtonOnChanged(b: *mut uiFontButton,
@@ -724,7 +699,6 @@ extern {
 
 pub enum uiColorButton {}
 
-#[link(name = "ui")]
 extern {
     pub fn uiColorButtonColor(b: *mut uiColorButton,
                               r: *mut c_double,
@@ -741,4 +715,3 @@ extern {
                                   data: *mut c_void);
     pub fn uiNewColorButton() -> *mut uiColorButton;
 }
-

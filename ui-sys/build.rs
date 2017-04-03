@@ -1,4 +1,5 @@
-extern crate make_cmd;
+extern crate cmake;
+use cmake::Config;
 
 use std::env;
 use std::path::Path;
@@ -9,14 +10,23 @@ fn main() {
         Command::new("git").args(&["submodule", "update", "--init"]).status().unwrap();
     }
 
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let outdir_argument = format!("OUTDIR={}", out_dir);
-    let objdir_argument = format!("OBJDIR={}/obj", out_dir);
-    make_cmd::gnu_make().args(&["-C", "libui", &*outdir_argument, &*objdir_argument])
-                        .status()
-                        .unwrap();
+    let target = env::var("TARGET").unwrap();
+    let msvc = target.contains("msvc");
 
-    println!("cargo:rustc-link-lib=dylib=ui");
-    println!("cargo:rustc-link-search=native={}", out_dir);
+    let dst = Config::new("libui")
+        .build_target("libui")
+        .build();
+
+    let mut postfix = Path::new("build").join("out");
+    let libname;
+    if msvc {
+        postfix = postfix.join("Release");
+        libname = "libui";
+    } else {
+        libname = "ui";
+    }
+    let dst = dst.join(&postfix);
+
+    println!("cargo:rustc-link-lib={}", libname);
+    println!("cargo:rustc-link-search=native={}", dst.display());
 }
-

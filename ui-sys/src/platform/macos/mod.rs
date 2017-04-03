@@ -23,7 +23,6 @@ pub struct uiDarwinControl {
                                           NSLayoutConstraintOrientation),
 }
 
-#[link(name = "ui")]
 extern {
     pub fn uiDarwinControlSyncEnableState(control: *mut uiDarwinControl, state: c_int);
     pub fn uiDarwinControlSetSuperview(control: *mut uiDarwinControl, view: *mut NSView);
@@ -59,4 +58,3 @@ pub const NSLayoutPriorityWindowSizeStayPut: NSLayoutPriority = 500.0;
 pub const NSLayoutPriorityDragThatCannotResizeWindow: NSLayoutPriority = 490.0;
 pub const NSLayoutPriorityDefaultLow: NSLayoutPriority = 250.0;
 pub const NSLayoutPriorityFittingSizeCompression: NSLayoutPriority = 50.0;
-
